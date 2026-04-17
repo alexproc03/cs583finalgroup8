@@ -46,6 +46,8 @@ The war has dragged on for centuries. To break the stalemate, the fungal conscio
 * **Michael Little:** Level design, Map Textures
 * **Alex Prochazka:** 
 * **Shane Stevenson:** Player movement, Player arsenal
+  
+---
 
 ## MVP Roadmap
 Movement Mechanics -> Weapons & Enemies-> Map Design -> Art -> Refine
