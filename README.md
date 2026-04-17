@@ -1,6 +1,6 @@
 # SPORECORE
 
-**Team:** Canyon Cavicke, Micheal Little, Alex Prochazka, Shane Stevenson
+**Team:** Canyon Cavicke, Michael Little, Alex Prochazka, Shane Stevenson
 
 [![Unity Version](https://img.shields.io/badge/Unity-2022.3%2B-blue.svg)](https://unity.com/) 
 [![Platform](https://img.shields.io/badge/Platform-PC-orange.svg)]()
@@ -36,12 +36,16 @@ The war has dragged on for centuries. To break the stalemate, the fungal conscio
 * **Left Mouse Button** - Primary Fire
 * **Right Mouse Button** - Alt Fire / Weapon Ability
 * **Scroll / 1-3** - Switch Weapons
-* **r** - grappel (On designated surfaces only)
+* **R** - Grappel (On designated surfaces only)
+* **CTRL** - Slide 
 
 ---
 
 ## Group member goals:
-* **Canyon Cavicke:**
-* **Micheal Little:** Level design, ????
+* **Canyon Cavicke:** Art Assets, Enemies
+* **Michael Little:** Level design, Map Textures
 * **Alex Prochazka:** 
-* **Shane Stevenson:** Player movement, player arsenal
+* **Shane Stevenson:** Player movement, Player arsenal
+
+## MVP Roadmap
+Movement Mechanics -> Weapons & Enemies-> Map Design -> Art -> Refine
