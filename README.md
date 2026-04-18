@@ -44,7 +44,7 @@ The war has dragged on for centuries. To break the stalemate, the fungal conscio
 ## Group member goals:
 * **Canyon Cavicke:** Art Assets, Enemies
 * **Michael Little:** Level design, Map Textures
-* **Alex Prochazka:** 
+* **Alex Prochazka:** UI/HUD, Gameplay integration
 * **Shane Stevenson:** Player movement, Player arsenal
   
 ---
