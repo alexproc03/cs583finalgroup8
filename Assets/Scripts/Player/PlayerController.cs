@@ -30,7 +30,20 @@ public class PlayerController : MonoBehaviour
     public float crouchSpeed = 7f;
     public float slideDrag = 14f;
     public float slideMinSpeed = 2f;
+    public float slideSteerStrength = 8f;
     public float cameraLerpSpeed = 12f;
+
+    [Header("Grapple")]
+    public KeyCode grappleKey = KeyCode.E;
+    public float grappleMaxDistance = 30f;
+    public LayerMask grappleLayer;
+    public float grapplePullSpeed = 20f;
+    public float grappleArrivalDistance = 2f;
+    public float grappleExitSpeed = 14f;
+    public float grappleCooldown = 0.5f;
+    public Material grappleLineMaterial;
+    public float grappleLineRightOffset = 0.35f;
+    public float grappleLineDownOffset = 0.2f;
 
     private CharacterController _cc;
     private Vector3 _velocity;          // vertical only
@@ -50,6 +63,14 @@ public class PlayerController : MonoBehaviour
     private MoveState _moveState = MoveState.Standing;
     private Vector3 _slideVelocity;
 
+    private bool _isGrappling;
+    private Vector3 _grappleAnchor;
+    private LineRenderer _grappleLine;
+    private float _grappleCooldownTimer;
+    private Camera _camera;
+
+    private bool _wasGrounded;
+
     public bool IsDashing => _dashTimer > 0f;
     public Vector3 DashDirection => _dashDirection;
 
@@ -61,6 +82,22 @@ public class PlayerController : MonoBehaviour
         _cameraHolder = transform.Find("CameraHolder");
         _standCameraY = _cameraHolder.localPosition.y;
         _targetCameraY = _standCameraY;
+        _camera = Camera.main;
+
+        _grappleLine = gameObject.AddComponent<LineRenderer>();
+        _grappleLine.positionCount = 2;
+        _grappleLine.startWidth = 0.05f;
+        _grappleLine.endWidth = 0.02f;
+        _grappleLine.useWorldSpace = true;
+        if (grappleLineMaterial != null)
+            _grappleLine.material = grappleLineMaterial;
+        else
+        {
+            _grappleLine.material = new Material(Shader.Find("Sprites/Default"));
+            _grappleLine.startColor = new Color(0.35f, 0.35f, 0.35f);
+            _grappleLine.endColor   = new Color(0.35f, 0.35f, 0.35f);
+        }
+        _grappleLine.enabled = false;
     }
 
     void Update()
@@ -73,6 +110,11 @@ public class PlayerController : MonoBehaviour
             _jumpsRemaining = maxJumps;
         }
 
+        if (!grounded && _wasGrounded)
+            _jumpsRemaining = Mathf.Min(_jumpsRemaining, maxJumps - 1);
+        _wasGrounded = grounded;
+
+        HandleGrapple();
         HandleDash();
         HandleCrouchSlide(grounded);
         HandleHorizontalMovement(grounded);
@@ -106,6 +148,51 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    void HandleGrapple()
+    {
+        _grappleCooldownTimer = Mathf.Max(0f, _grappleCooldownTimer - Time.deltaTime);
+
+        if (Input.GetKeyDown(grappleKey) && !_isGrappling && _grappleCooldownTimer == 0f)
+        {
+            Ray ray = new Ray(_camera.transform.position, _camera.transform.forward);
+            if (Physics.Raycast(ray, out RaycastHit hit, grappleMaxDistance, grappleLayer))
+            {
+                _grappleAnchor = hit.point;
+                _isGrappling = true;
+                _dashTimer = 0f;
+                _slideVelocity = Vector3.zero;
+                _grappleLine.enabled = true;
+            }
+        }
+
+        if (Input.GetKeyUp(grappleKey) && _isGrappling)
+            DetachGrapple();
+
+        if (_isGrappling)
+        {
+            if ((_grappleAnchor - transform.position).magnitude <= grappleArrivalDistance)
+            {
+                DetachGrapple();
+                return;
+            }
+            Vector3 ropeStart = _cameraHolder.position
+                + _camera.transform.right * grappleLineRightOffset
+                - _camera.transform.up * grappleLineDownOffset;
+            _grappleLine.SetPosition(0, ropeStart);
+            _grappleLine.SetPosition(1, _grappleAnchor);
+        }
+    }
+
+    void DetachGrapple()
+    {
+        Vector3 dir = (_grappleAnchor - transform.position).normalized;
+        _horizontalVelocity = new Vector3(dir.x, 0f, dir.z) * grappleExitSpeed;
+        _velocity.y = dir.y * grappleExitSpeed;
+        _isGrappling = false;
+        _grappleLine.enabled = false;
+        _grappleCooldownTimer = grappleCooldown;
+    }
+
     void HandleCrouchSlide(bool grounded)
     {
         bool ctrlHeld = Input.GetKey(KeyCode.LeftControl);
@@ -119,6 +206,13 @@ public class PlayerController : MonoBehaviour
                     {
                         _slideVelocity = _dashDirection * dashSpeed;
                         _dashTimer = 0f;
+                        EnterCrouched();
+                        _moveState = MoveState.Sliding;
+                    }
+                    else if (_horizontalVelocity.magnitude > slideMinSpeed)
+                    {
+                        // Landing with momentum (e.g. dash-jump) — carry it into the slide
+                        _slideVelocity = _horizontalVelocity;
                         EnterCrouched();
                         _moveState = MoveState.Sliding;
                     }
@@ -169,6 +263,13 @@ public class PlayerController : MonoBehaviour
                 else
                 {
                     _slideVelocity = _slideVelocity.normalized * speed;
+
+                    float steerInput = Input.GetAxisRaw("Horizontal");
+                    if (steerInput != 0f)
+                    {
+                        _slideVelocity += transform.right * (steerInput * slideSteerStrength * Time.deltaTime);
+                        _slideVelocity = _slideVelocity.normalized * speed;
+                    }
                 }
                 break;
         }
@@ -176,6 +277,13 @@ public class PlayerController : MonoBehaviour
 
     void HandleHorizontalMovement(bool grounded)
     {
+        if (_isGrappling)
+        {
+            Vector3 dir = (_grappleAnchor - transform.position).normalized;
+            _cc.Move(dir * grapplePullSpeed * Time.deltaTime);
+            return;
+        }
+
         if (_moveState == MoveState.Sliding)
         {
             _cc.Move(_slideVelocity * Time.deltaTime);
@@ -221,6 +329,9 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetButtonDown("Jump") && _jumpsRemaining > 0)
         {
+            if (_isGrappling)
+                DetachGrapple();
+
             if (_moveState != MoveState.Standing && CanStand())
             {
                 ExitCrouched();
@@ -242,6 +353,11 @@ public class PlayerController : MonoBehaviour
 
     void HandleGravity()
     {
+        if (_isGrappling)
+        {
+            _velocity.y = 0f;
+            return;
+        }
         float appliedGravity = (_velocity.y < 0f) ? gravity * fallMultiplier : gravity;
         _velocity.y += appliedGravity * Time.deltaTime;
         _cc.Move(_velocity * Time.deltaTime);
