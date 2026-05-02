@@ -5,6 +5,9 @@ public abstract class EnemyBase : MonoBehaviour
 {
     protected enum State { Idle, Chase, Attack, Dead }
 
+    [Header("Health")]
+    public float maxHealth = 100f;
+
     [Header("Detection")]
     public float detectionRange = 20f;
 
@@ -12,16 +15,34 @@ public abstract class EnemyBase : MonoBehaviour
     public float moveSpeed = 4f;
 
     protected NavMeshAgent _agent;
-    protected Transform _player;
-    protected State _state = State.Idle;
-    protected Animation _anim;
+    protected Transform    _player;
+    protected State        _state = State.Idle;
+    protected Animation    _anim;
+    protected float        _health;
 
     private string _currentAnim;
 
     protected virtual void Awake()
     {
-        _agent = GetComponent<NavMeshAgent>();
-        _anim = GetComponentInChildren<Animation>();
+        _health = maxHealth;
+        _agent  = GetComponent<NavMeshAgent>();
+        _anim   = GetComponentInChildren<Animation>();
+    }
+
+    public virtual void TakeDamage(float damage)
+    {
+        if (_state == State.Dead) return;
+        _health -= damage;
+        if (_health <= 0f) Die();
+    }
+
+    protected virtual void Die()
+    {
+        _state = State.Dead;
+        _agent.ResetPath();
+        _agent.enabled = false;
+        PlayAnim("Death");
+        Destroy(gameObject, 2f);
     }
 
     protected virtual void Start()

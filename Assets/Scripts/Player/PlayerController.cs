@@ -33,6 +33,9 @@ public class PlayerController : MonoBehaviour
     public float slideSteerStrength = 8f;
     public float cameraLerpSpeed = 12f;
 
+    [Header("B-hop")]
+    public float bhopWindow = 0.01f;
+
     [Header("Grapple")]
     public KeyCode grappleKey = KeyCode.E;
     public float grappleMaxDistance = 30f;
@@ -69,7 +72,9 @@ public class PlayerController : MonoBehaviour
     private float _grappleCooldownTimer;
     private Camera _camera;
 
-    private bool _wasGrounded;
+    private bool    _wasGrounded;
+    private float   _bhopTimer;
+    private Vector3 _bhopVelocity;
 
     public bool IsDashing => _dashTimer > 0f;
     public Vector3 DashDirection => _dashDirection;
@@ -109,6 +114,13 @@ public class PlayerController : MonoBehaviour
             _velocity.y = -2f;
             _jumpsRemaining = maxJumps;
         }
+
+        if (grounded && !_wasGrounded)
+        {
+            _bhopTimer    = bhopWindow;
+            _bhopVelocity = _horizontalVelocity;
+        }
+        _bhopTimer = Mathf.Max(0f, _bhopTimer - Time.deltaTime);
 
         if (!grounded && _wasGrounded)
             _jumpsRemaining = Mathf.Min(_jumpsRemaining, maxJumps - 1);
@@ -346,6 +358,9 @@ public class PlayerController : MonoBehaviour
                 _dashTimer = 0f;
             }
 
+            if (_bhopTimer > 0f && _bhopVelocity.magnitude > moveSpeed)
+                _horizontalVelocity = _bhopVelocity;
+            _bhopTimer = 0f;
             _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
             _jumpsRemaining--;
         }
