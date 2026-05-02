@@ -467,6 +467,8 @@ GameObject:
   - component: {fileID: 487906501}
   - component: {fileID: 487906500}
   - component: {fileID: 487906499}
+  - component: {fileID: 487906504}
+  - component: {fileID: 487906503}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -506,7 +508,29 @@ MonoBehaviour:
   maxJumps: 2
   gravity: -28
   fallMultiplier: 2.2
-  airControlFactor: 0.85
+  airAcceleration: 40
+  dashSpeed: 22
+  dashDuration: 0.3
+  dashCooldown: 1
+  crouchHeight: 1
+  crouchSpeed: 7
+  slideDrag: 14
+  slideMinSpeed: 2
+  slideSteerStrength: 8
+  cameraLerpSpeed: 12
+  bhopWindow: 0.01
+  grappleKey: 101
+  grappleMaxDistance: 30
+  grappleLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  grapplePullSpeed: 20
+  grappleArrivalDistance: 2
+  grappleExitSpeed: 14
+  grappleCooldown: 0.5
+  grappleLineMaterial: {fileID: 0}
+  grappleLineRightOffset: 0.35
+  grappleLineDownOffset: 0.2
 --- !u!143 &487906501
 CharacterController:
   m_ObjectHideFlags: 0
@@ -548,6 +572,30 @@ Transform:
   - {fileID: 2082528027}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &487906503
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 487906498}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 770e9a21d8a813f988ac7bc4e70e2372, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponManager
+--- !u!114 &487906504
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 487906498}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e1ce5514c8b9b4929b56949ca69053f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHUD
 --- !u!1 &508058461
 GameObject:
   m_ObjectHideFlags: 0
@@ -988,7 +1036,7 @@ GameObject:
   - component: {fileID: 1469202317}
   - component: {fileID: 1469202316}
   - component: {fileID: 1469202315}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Wall_North
   m_TagString: Untagged
   m_Icon: {fileID: 0}
