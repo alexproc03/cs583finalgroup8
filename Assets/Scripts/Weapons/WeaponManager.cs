@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[RequireComponent(typeof(AudioSource))]
 public class WeaponManager : MonoBehaviour
 {
     [SerializeField] private WeaponBase[] weaponPrefabs;
@@ -10,13 +11,15 @@ public class WeaponManager : MonoBehaviour
 
     public event System.Action<int> OnWeaponChanged;
 
-    private Camera _camera;
+    private Camera      _camera;
+    private AudioSource _audioSource;
 
     // Build weapons in Awake so PlayerHUD can safely read them in Start.
     void Awake()
     {
         _camera = GetComponentInChildren<Camera>();
         if (_camera == null) _camera = Camera.main;
+        _audioSource = GetComponent<AudioSource>();
         BuildWeapons();
     }
 
@@ -54,6 +57,7 @@ public class WeaponManager : MonoBehaviour
         for (int i = 0; i < weaponPrefabs.Length; i++)
         {
             weapons[i] = Instantiate(weaponPrefabs[i], _camera.transform, false);
+            weapons[i].fireAudioSource = _audioSource;
             weapons[i].gameObject.SetActive(false);
         }
     }

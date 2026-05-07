@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
+[RequireComponent(typeof(AudioSource))]
 public abstract class WeaponBase : MonoBehaviour
 {
     public string weaponName  = "Weapon";
@@ -10,13 +11,25 @@ public abstract class WeaponBase : MonoBehaviour
     public float  reloadTime  = 1f;
     public Color  hudColor    = Color.gray;
 
+    public AudioClip fireSound;
+    public AudioClip reloadSound;
+
+    // Set by WeaponManager. Lives on a parent that stays active across weapon
+    // switches, so fire one-shots ring out instead of cutting off mid-clip.
+    public AudioSource fireAudioSource;
+
     public bool  IsReloading    { get; protected set; }
     public float ReloadProgress { get; protected set; }
 
-    protected float    _nextFireTime;
-    private   Coroutine _reloadCoroutine;
+    protected float       _nextFireTime;
+    protected AudioSource _audioSource;
+    private   Coroutine   _reloadCoroutine;
 
-    protected virtual void Awake() => currentAmmo = maxAmmo;
+    protected virtual void Awake()
+    {
+        currentAmmo  = maxAmmo;
+        _audioSource = GetComponent<AudioSource>();
+    }
 
     public virtual void OnEquip() => gameObject.SetActive(true);
 
@@ -33,6 +46,7 @@ public abstract class WeaponBase : MonoBehaviour
         _nextFireTime = Time.time + fireRate;
         currentAmmo--;
         Fire();
+        if (fireSound != null) fireAudioSource.PlayOneShot(fireSound);
         if (currentAmmo == 0) Reload();
     }
 
@@ -50,6 +64,8 @@ public abstract class WeaponBase : MonoBehaviour
         IsReloading    = true;
         ReloadProgress = 0f;
         float elapsed  = 0f;
+
+        if (reloadSound != null) _audioSource.PlayOneShot(reloadSound);
 
         while (elapsed < reloadTime)
         {
