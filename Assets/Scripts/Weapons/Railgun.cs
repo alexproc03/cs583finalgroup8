@@ -19,10 +19,6 @@ public class Railgun : WeaponBase
         reloadTime = 10f;
         hudColor   = new Color(0.15f, 0.75f, 1f);
         base.Awake();
-    }
-
-    void Start()
-    {
         BuildVisuals();
     }
 

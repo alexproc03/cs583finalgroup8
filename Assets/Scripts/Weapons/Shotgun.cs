@@ -22,10 +22,6 @@ public class Shotgun : WeaponBase
         reloadTime = 2f;
         hudColor   = new Color(0.72f, 0.52f, 0.25f);
         base.Awake();
-    }
-
-    void Start()
-    {
         BuildVisuals();
     }
 

@@ -27,6 +27,10 @@ public class MeleeEnemy : EnemyBase
                 PerformMeleeAttack();
                 _attackTimer = attackCooldown;
             }
+            else
+            {
+                PlayAnim("Idle");
+            }
         }
         else
         {

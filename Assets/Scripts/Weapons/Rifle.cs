@@ -17,10 +17,6 @@ public class Rifle : WeaponBase
         reloadTime  = 3f;
         hudColor    = new Color(0.55f, 0.55f, 0.55f);
         base.Awake();
-    }
-
-    void Start()
-    {
         BuildVisuals();
     }
 

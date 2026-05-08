@@ -12,7 +12,7 @@ public class PlayerHUD : MonoBehaviour
 
     void Start()
     {
-        _wm = FindObjectOfType<WeaponManager>();
+        _wm = FindFirstObjectByType<WeaponManager>();
         if (_wm == null) return;
 
         _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")

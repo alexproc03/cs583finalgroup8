@@ -26,10 +26,6 @@ public class MachineGun : WeaponBase
         reloadTime = 3f;
         hudColor   = new Color(0.25f, 0.3f, 0.35f);
         base.Awake();
-    }
-
-    void Start()
-    {
         _currentSpread = baseSpread;
         BuildVisuals();
     }

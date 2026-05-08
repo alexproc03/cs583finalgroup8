@@ -17,7 +17,7 @@ public abstract class EnemyBase : MonoBehaviour
     protected NavMeshAgent _agent;
     protected Transform    _player;
     protected State        _state = State.Idle;
-    protected Animation    _anim;
+    protected Animator     _anim;
     protected float        _health;
 
     private string _currentAnim;
@@ -26,13 +26,14 @@ public abstract class EnemyBase : MonoBehaviour
     {
         _health = maxHealth;
         _agent  = GetComponent<NavMeshAgent>();
-        _anim   = GetComponentInChildren<Animation>();
+        _anim   = GetComponentInChildren<Animator>();
     }
 
     public virtual void TakeDamage(float damage)
     {
         if (_state == State.Dead) return;
         _health -= damage;
+        Debug.Log($"{name} took {damage} dmg, hp={_health}", this);
         if (_health <= 0f) Die();
     }
 
@@ -42,6 +43,7 @@ public abstract class EnemyBase : MonoBehaviour
         _agent.ResetPath();
         _agent.enabled = false;
         PlayAnim("Death");
+        Debug.Log($"{name} died (Destroy in 2s)", this);
         Destroy(gameObject, 2f);
     }
 
@@ -68,9 +70,11 @@ public abstract class EnemyBase : MonoBehaviour
 
     protected void PlayAnim(string animName)
     {
-        if (_anim == null || _anim[animName] == null || _currentAnim == animName) return;
+        if (_anim == null || _currentAnim == animName) return;
+        int hash = Animator.StringToHash(animName);
+        if (!_anim.HasState(0, hash)) return;
         _currentAnim = animName;
-        _anim.CrossFade(animName, 0.15f);
+        _anim.CrossFadeInFixedTime(hash, 0.15f);
     }
 
     // Returns true if nothing blocks the sightline to the player.
