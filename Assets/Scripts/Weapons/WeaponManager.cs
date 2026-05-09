@@ -28,10 +28,14 @@ public class WeaponManager : MonoBehaviour
         EquipWeapon(0);
     }
 
+    void OnEnable()  { PlayerHealth.OnPlayerDied += DisableOnDeath; }
+    void OnDisable() { PlayerHealth.OnPlayerDied -= DisableOnDeath; }
+    void DisableOnDeath() { enabled = false; }
+
     void Update()
     {
         HandleSwitchInput();
-        if (Input.GetMouseButton(0))        currentWeapon.TryFire();
+        if (Input.GetMouseButton(0))        currentWeapon.TryFire(Input.GetMouseButtonDown(0));
         if (Input.GetKeyDown(KeyCode.R))    currentWeapon.Reload();
     }
 

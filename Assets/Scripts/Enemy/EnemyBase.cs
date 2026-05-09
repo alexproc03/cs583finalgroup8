@@ -18,6 +18,7 @@ public abstract class EnemyBase : MonoBehaviour
     protected Transform    _player;
     protected State        _state = State.Idle;
     protected Animator     _anim;
+    protected EnemyAudio   _audio;
     protected float        _health;
 
     private string _currentAnim;
@@ -27,6 +28,7 @@ public abstract class EnemyBase : MonoBehaviour
         _health = maxHealth;
         _agent  = GetComponent<NavMeshAgent>();
         _anim   = GetComponentInChildren<Animator>();
+        _audio  = GetComponentInChildren<EnemyAudio>();
     }
 
     public virtual void TakeDamage(float damage)

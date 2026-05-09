@@ -76,6 +76,11 @@ public class PlayerController : MonoBehaviour
     private float   _bhopTimer;
     private Vector3 _bhopVelocity;
 
+    [Header("Footsteps")]
+    public float footstepInterval = 2.2f;
+    private float _stepDistance;
+    private PlayerAudio _audio;
+
     public bool IsDashing => _dashTimer > 0f;
     public Vector3 DashDirection => _dashDirection;
 
@@ -103,7 +108,13 @@ public class PlayerController : MonoBehaviour
             _grappleLine.endColor   = new Color(0.35f, 0.35f, 0.35f);
         }
         _grappleLine.enabled = false;
+
+        _audio = GetComponent<PlayerAudio>();
     }
+
+    void OnEnable()  { PlayerHealth.OnPlayerDied += DisableOnDeath; }
+    void OnDisable() { PlayerHealth.OnPlayerDied -= DisableOnDeath; }
+    void DisableOnDeath() { enabled = false; }
 
     void Update()
     {
@@ -119,6 +130,7 @@ public class PlayerController : MonoBehaviour
         {
             _bhopTimer    = bhopWindow;
             _bhopVelocity = _horizontalVelocity;
+            if (_audio != null) _audio.PlayLand();
         }
         _bhopTimer = Mathf.Max(0f, _bhopTimer - Time.deltaTime);
 
@@ -128,11 +140,31 @@ public class PlayerController : MonoBehaviour
 
         HandleGrapple();
         HandleDash();
+        MoveState prevState = _moveState;
         HandleCrouchSlide(grounded);
+        if (_moveState == MoveState.Sliding && prevState != MoveState.Sliding && _audio != null) _audio.PlaySlide();
         HandleHorizontalMovement(grounded);
         HandleJump();
         HandleGravity();
         UpdateCameraHeight();
+        HandleFootsteps(grounded);
+    }
+
+    void HandleFootsteps(bool grounded)
+    {
+        if (!grounded || IsDashing || _moveState == MoveState.Sliding)
+        {
+            _stepDistance = 0f;
+            return;
+        }
+        float speed = _horizontalVelocity.magnitude;
+        if (speed < 0.5f) { _stepDistance = 0f; return; }
+        _stepDistance += speed * Time.deltaTime;
+        if (_stepDistance >= footstepInterval)
+        {
+            _stepDistance = 0f;
+            if (_audio != null) _audio.PlayFootstep();
+        }
     }
 
     void HandleDash()
@@ -157,6 +189,7 @@ public class PlayerController : MonoBehaviour
             _dashDirection = dir;
             _dashTimer = dashDuration;
             _dashCooldownTimer = dashCooldown;
+            if (_audio != null) _audio.PlayDash();
         }
     }
 
@@ -174,6 +207,7 @@ public class PlayerController : MonoBehaviour
                 _dashTimer = 0f;
                 _slideVelocity = Vector3.zero;
                 _grappleLine.enabled = true;
+                if (_audio != null) _audio.PlayGrapple();
             }
         }
 
@@ -363,6 +397,7 @@ public class PlayerController : MonoBehaviour
             _bhopTimer = 0f;
             _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
             _jumpsRemaining--;
+            if (_audio != null) _audio.PlayJump();
         }
     }
 

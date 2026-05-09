@@ -18,6 +18,10 @@ public class MouseLook : MonoBehaviour
         Cursor.visible = false;
     }
 
+    void OnEnable()  { PlayerHealth.OnPlayerDied += DisableOnDeath; }
+    void OnDisable() { PlayerHealth.OnPlayerDied -= DisableOnDeath; }
+    void DisableOnDeath() { enabled = false; }
+
     void Update()
     {
         float mouseX = Input.GetAxisRaw("Mouse X") * sensitivity;

@@ -134,6 +134,7 @@ MonoBehaviour:
   hudColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   fireSound: {fileID: 8300000, guid: dc523aeeff129f244af935defc23c31b, type: 3}
   reloadSound: {fileID: 8300000, guid: 58f29a544b0e97242a2d1034fffd9468, type: 3}
+  emptySound: {fileID: 8300000, guid: 23faa669884963447951d8f0c8788f85, type: 3}
   fireAudioSource: {fileID: 0}
   damage: 10
   minDamage: 3

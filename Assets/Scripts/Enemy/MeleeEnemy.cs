@@ -8,34 +8,61 @@ public class MeleeEnemy : EnemyBase
     [Header("Melee")]
     public float meleeRange = 1.8f;
     public float attackCooldown = 1.4f;
+    public float meleeDamage = 15f;
+    public float attackAnimDuration = 0.8f;
+    public float attackHitDelay = 0.35f;
 
     private float _attackTimer;
+    private float _pendingHitTime = -1f;
+
+    protected override void Awake()
+    {
+        base.Awake();
+        _agent.stoppingDistance = Mathf.Max(0.1f, meleeRange - 0.3f);
+    }
 
     protected override void Tick(float distToPlayer)
     {
         _attackTimer -= Time.deltaTime;
 
+        // Resolve a queued hit when the swing reaches its impact frame.
+        if (_pendingHitTime > 0f && Time.time >= _pendingHitTime)
+        {
+            _pendingHitTime = -1f;
+            if (distToPlayer <= meleeRange) PerformMeleeAttack();
+        }
+
+        // Mid-swing: lock state, let the Attack animation finish uninterrupted.
+        // Don't rotate — orientation was committed when the swing started.
+        if (attackCooldown - _attackTimer < attackAnimDuration)
+        {
+            _agent.ResetPath();
+            return;
+        }
+
         if (distToPlayer <= meleeRange)
         {
             _agent.ResetPath();
             _state = State.Attack;
-            FacePlayer();
 
             if (_attackTimer <= 0f)
             {
+                FacePlayer();
                 PlayAnim("Attack");
-                PerformMeleeAttack();
+                if (_audio != null) _audio.PlayAttack();
+                _pendingHitTime = Time.time + attackHitDelay;
                 _attackTimer = attackCooldown;
             }
             else
             {
+                FacePlayer();
                 PlayAnim("Idle");
             }
         }
         else
         {
             _state = State.Chase;
-            PlayAnim("Run");
+            PlayAnim(_agent.velocity.sqrMagnitude > 0.1f ? "Run" : "Idle");
             _agent.SetDestination(_player.position);
         }
     }
@@ -48,11 +75,10 @@ public class MeleeEnemy : EnemyBase
             transform.rotation = Quaternion.LookRotation(dir);
     }
 
-    // -----------------------------------------------------------------------
-    // TODO: Implement melee hitbox, hit detection, and damage application here.
-    // -----------------------------------------------------------------------
     private void PerformMeleeAttack()
     {
-        Debug.Log($"{name} [MeleeEnemy]: Attack triggered — hitbox not yet implemented.");
+        if (_player == null) return;
+        PlayerHealth ph = _player.GetComponent<PlayerHealth>();
+        if (ph != null) ph.TakeDamage(meleeDamage);
     }
 }

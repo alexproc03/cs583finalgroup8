@@ -13,10 +13,11 @@ public abstract class WeaponBase : MonoBehaviour
 
     public AudioClip fireSound;
     public AudioClip reloadSound;
+    public AudioClip emptySound;
 
     // Set by WeaponManager. Lives on a parent that stays active across weapon
     // switches, so fire one-shots ring out instead of cutting off mid-clip.
-    public AudioSource fireAudioSource;
+    [HideInInspector] public AudioSource fireAudioSource;
 
     public bool  IsReloading    { get; protected set; }
     public float ReloadProgress { get; protected set; }
@@ -39,9 +40,15 @@ public abstract class WeaponBase : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    public virtual void TryFire()
+    public virtual void TryFire(bool justPressed = false)
     {
-        if (IsReloading || currentAmmo <= 0) return;
+        if (IsReloading) return;
+        if (currentAmmo <= 0)
+        {
+            if (justPressed && emptySound != null && fireAudioSource != null)
+                fireAudioSource.PlayOneShot(emptySound);
+            return;
+        }
         if (Time.time < _nextFireTime) return;
         _nextFireTime = Time.time + fireRate;
         currentAmmo--;

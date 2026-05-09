@@ -134,6 +134,7 @@ MonoBehaviour:
   hudColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   fireSound: {fileID: 8300000, guid: 58c030ad106a04440a37893c51d6eef0, type: 3}
   reloadSound: {fileID: 8300000, guid: 882bc2f32786a08488865278638d49b3, type: 3}
+  emptySound: {fileID: 8300000, guid: 23faa669884963447951d8f0c8788f85, type: 3}
   fireAudioSource: {fileID: 0}
   pelletCount: 8
   damagePerPellet: 15

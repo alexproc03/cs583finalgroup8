@@ -9,6 +9,9 @@ public class PlayerHUD : MonoBehaviour
     private Text          _weaponNameText;
     private Text          _ammoText;
     private Font          _font;
+    private PlayerHealth  _ph;
+    private Text          _healthText;
+    private GameObject    _deathOverlay;
 
     void Start()
     {
@@ -33,14 +36,28 @@ public class PlayerHUD : MonoBehaviour
         BuildCrosshair(canvasGO);
         BuildWeaponSlots(canvasGO);
         BuildWeaponInfo(canvasGO);
+        BuildHealthBar(canvasGO);
+        BuildDeathOverlay(canvasGO);
+
+        PlayerHealth.OnPlayerDied += ShowDeathOverlay;
 
         _wm.OnWeaponChanged += RefreshSlots;
         RefreshSlots(_wm.currentIndex);
+
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj != null) _ph = playerObj.GetComponent<PlayerHealth>();
+        if (_ph != null)
+        {
+            _ph.OnHealthChanged += RefreshHealth;
+            RefreshHealth(_ph.CurrentHealth, _ph.maxHealth);
+        }
     }
 
     void OnDestroy()
     {
         if (_wm != null) _wm.OnWeaponChanged -= RefreshSlots;
+        if (_ph != null) _ph.OnHealthChanged -= RefreshHealth;
+        PlayerHealth.OnPlayerDied -= ShowDeathOverlay;
     }
 
     void Update()
@@ -116,6 +133,56 @@ public class PlayerHUD : MonoBehaviour
             lrt.anchorMax = Vector2.one;
             lrt.offsetMin = lrt.offsetMax = Vector2.zero;
         }
+    }
+
+    void BuildHealthBar(GameObject root)
+    {
+        _healthText = MakeText(root, "HealthText", TextAnchor.LowerLeft, 22, Color.white,
+                               new Vector2(0f, 0f), new Vector2(24f, 20f), new Vector2(260f, 28f));
+    }
+
+    void BuildDeathOverlay(GameObject root)
+    {
+        _deathOverlay = new GameObject("DeathOverlay");
+        _deathOverlay.transform.SetParent(root.transform, false);
+
+        Image tint = _deathOverlay.AddComponent<Image>();
+        tint.color = new Color(0f, 0f, 0f, 0.65f);
+        tint.raycastTarget = true;
+        RectTransform rt = _deathOverlay.GetComponent<RectTransform>();
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.offsetMin = rt.offsetMax = Vector2.zero;
+
+        GameObject labelGO = new GameObject("YouDied");
+        labelGO.transform.SetParent(_deathOverlay.transform, false);
+        Text label = labelGO.AddComponent<Text>();
+        label.font = _font;
+        label.text = "YOU DIED";
+        label.alignment = TextAnchor.MiddleCenter;
+        label.fontSize = 96;
+        label.color = new Color(0.85f, 0.1f, 0.1f, 1f);
+        label.horizontalOverflow = HorizontalWrapMode.Overflow;
+        label.verticalOverflow = VerticalWrapMode.Overflow;
+        RectTransform lrt = labelGO.GetComponent<RectTransform>();
+        lrt.anchorMin = lrt.anchorMax = new Vector2(0.5f, 0.5f);
+        lrt.pivot = new Vector2(0.5f, 0.5f);
+        lrt.anchoredPosition = new Vector2(0f, 150f);
+        lrt.sizeDelta = new Vector2(800f, 200f);
+
+        _deathOverlay.SetActive(false);
+    }
+
+    void ShowDeathOverlay()
+    {
+        if (_deathOverlay != null) _deathOverlay.SetActive(true);
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
+
+    void RefreshHealth(float current, float max)
+    {
+        if (_healthText != null) _healthText.text = $"HP {Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}";
     }
 
     void BuildWeaponInfo(GameObject root)
