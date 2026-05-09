@@ -97,7 +97,17 @@ MonoBehaviour:
   moveSpeed: 4
   preferredRange: 12
   rangeTolerance: 2.5
-  attackCooldown: 2
+  minEngagementRange: 5
+  burstSize: 3
+  burstFireRate: 0.22
+  burstCooldown: 2.2
+  spreadAngle: 4
+  strafeSpeed: 3
+  strafeChangeDuration: 1.8
+  bulletPrefab: {fileID: 9010729209980637167, guid: 41f96773b243c4f79b000d071a502871, type: 3}
+  bulletSpeed: 35
+  bulletDamage: 12
+  muzzleHeightOffset: 1.4
 --- !u!1001 &2965691699401464835
 PrefabInstance:
   m_ObjectHideFlags: 0

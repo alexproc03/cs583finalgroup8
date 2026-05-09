@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,6 +13,7 @@ public class PlayerHUD : MonoBehaviour
     private PlayerHealth  _ph;
     private Text          _healthText;
     private GameObject    _deathOverlay;
+    private Image         _damageFlash;
 
     void Start()
     {
@@ -33,13 +35,15 @@ public class PlayerHUD : MonoBehaviour
 
         canvasGO.AddComponent<GraphicRaycaster>();
 
+        BuildDamageFlash(canvasGO);
         BuildCrosshair(canvasGO);
         BuildWeaponSlots(canvasGO);
         BuildWeaponInfo(canvasGO);
         BuildHealthBar(canvasGO);
         BuildDeathOverlay(canvasGO);
 
-        PlayerHealth.OnPlayerDied += ShowDeathOverlay;
+        PlayerHealth.OnPlayerDied    += ShowDeathOverlay;
+        PlayerHealth.OnPlayerDamaged += FlashDamage;
 
         _wm.OnWeaponChanged += RefreshSlots;
         RefreshSlots(_wm.currentIndex);
@@ -57,7 +61,8 @@ public class PlayerHUD : MonoBehaviour
     {
         if (_wm != null) _wm.OnWeaponChanged -= RefreshSlots;
         if (_ph != null) _ph.OnHealthChanged -= RefreshHealth;
-        PlayerHealth.OnPlayerDied -= ShowDeathOverlay;
+        PlayerHealth.OnPlayerDied    -= ShowDeathOverlay;
+        PlayerHealth.OnPlayerDamaged -= FlashDamage;
     }
 
     void Update()
@@ -70,6 +75,42 @@ public class PlayerHUD : MonoBehaviour
     }
 
     // -------------------------------------------------------------------------
+
+    void BuildDamageFlash(GameObject root)
+    {
+        GameObject go = new GameObject("DamageFlash");
+        go.transform.SetParent(root.transform, false);
+        _damageFlash = go.AddComponent<Image>();
+        _damageFlash.color = new Color(0.85f, 0f, 0f, 0f);
+        _damageFlash.raycastTarget = false;
+        RectTransform rt = go.GetComponent<RectTransform>();
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.offsetMin = rt.offsetMax = Vector2.zero;
+    }
+
+    void FlashDamage()
+    {
+        if (_damageFlash == null) return;
+        StopCoroutine("DamageFlashRoutine");
+        StartCoroutine(DamageFlashRoutine());
+    }
+
+    IEnumerator DamageFlashRoutine()
+    {
+        // Snap to peak alpha, then fade out
+        _damageFlash.color = new Color(0.85f, 0f, 0f, 0.28f);
+        float duration = 0.45f;
+        float t = 0f;
+        while (t < duration)
+        {
+            t += Time.unscaledDeltaTime;
+            float a = Mathf.Lerp(0.28f, 0f, t / duration);
+            _damageFlash.color = new Color(0.85f, 0f, 0f, a);
+            yield return null;
+        }
+        _damageFlash.color = new Color(0.85f, 0f, 0f, 0f);
+    }
 
     void BuildCrosshair(GameObject root)
     {

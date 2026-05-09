@@ -13,6 +13,7 @@ public class PlayerHealth : MonoBehaviour
     public event Action               OnDeath;
 
     public static event Action OnPlayerDied;
+    public static event Action OnPlayerDamaged;
 
     void Awake()
     {
@@ -29,6 +30,7 @@ public class PlayerHealth : MonoBehaviour
         if (IsDead || amount <= 0f) return;
         CurrentHealth = Mathf.Max(0f, CurrentHealth - amount);
         OnHealthChanged?.Invoke(CurrentHealth, maxHealth);
+        OnPlayerDamaged?.Invoke();
         Debug.Log($"Player took {amount} dmg, hp={CurrentHealth}", this);
         if (CurrentHealth <= 0f) Die();
     }
