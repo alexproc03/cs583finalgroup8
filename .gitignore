@@ -102,3 +102,12 @@ InitTestScene*.unity*
 
 # ds_store
 *.DS_store
+
+# Claude Code
+.claude/
+
+# Local screenshots and recovery
+/[Aa]ssets/Screenshots/
+/[Aa]ssets/Screenshots.meta
+/[Aa]ssets/_Recovery/
+/[Aa]ssets/_Recovery.meta
