@@ -34,7 +34,7 @@ public class MachineGun : WeaponBase
     {
         GameObject flashGO = new GameObject("MuzzleFlash");
         flashGO.transform.SetParent(transform, false);
-        flashGO.transform.localPosition = new Vector3(0f, 0f, 0.55f);
+        flashGO.transform.localPosition = new Vector3(-0.08f, 0.15f, 0.80f);
         _muzzleFlash           = flashGO.AddComponent<Light>();
         _muzzleFlash.type      = LightType.Point;
         _muzzleFlash.color     = new Color(1f, 0.85f, 0.4f);
