@@ -1,5 +1,7 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class PlayerHUD : MonoBehaviour
@@ -50,6 +52,14 @@ public class PlayerHUD : MonoBehaviour
         scaler.matchWidthOrHeight = 0.5f;
 
         canvasGO.AddComponent<GraphicRaycaster>();
+
+        // Ensure an EventSystem exists so UI buttons receive clicks.
+        if (FindFirstObjectByType<EventSystem>() == null)
+        {
+            GameObject es = new GameObject("EventSystem");
+            es.AddComponent<EventSystem>();
+            es.AddComponent<StandaloneInputModule>();
+        }
 
         BuildDamageFlash(canvasGO);
         BuildCrosshair(canvasGO);
@@ -286,7 +296,59 @@ public class PlayerHUD : MonoBehaviour
         lrt.anchoredPosition = new Vector2(0f, 150f);
         lrt.sizeDelta = new Vector2(800f, 200f);
 
+        MakeDeathButton("Restart", new Vector2(0f, -40f),  Restart);
+        MakeDeathButton("Main Menu", new Vector2(0f, -120f), GoToMainMenu);
+
         _deathOverlay.SetActive(false);
+    }
+
+    void MakeDeathButton(string text, Vector2 anchoredPos, UnityEngine.Events.UnityAction onClick)
+    {
+        GameObject go = new GameObject($"Btn_{text}");
+        go.transform.SetParent(_deathOverlay.transform, false);
+
+        Image bg = go.AddComponent<Image>();
+        bg.color = new Color(0.15f, 0.15f, 0.15f, 0.9f);
+
+        Button btn = go.AddComponent<Button>();
+        btn.targetGraphic = bg;
+        var colors = btn.colors;
+        colors.normalColor      = new Color(0.15f, 0.15f, 0.15f, 0.9f);
+        colors.highlightedColor = new Color(0.30f, 0.30f, 0.30f, 0.95f);
+        colors.pressedColor     = new Color(0.55f, 0.10f, 0.10f, 1f);
+        btn.colors = colors;
+        btn.onClick.AddListener(onClick);
+
+        RectTransform rt = go.GetComponent<RectTransform>();
+        rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.anchoredPosition = anchoredPos;
+        rt.sizeDelta = new Vector2(260f, 60f);
+
+        GameObject txtGO = new GameObject("Text");
+        txtGO.transform.SetParent(go.transform, false);
+        Text t = txtGO.AddComponent<Text>();
+        t.font = _font;
+        t.text = text;
+        t.alignment = TextAnchor.MiddleCenter;
+        t.fontSize = 26;
+        t.color = Color.white;
+        RectTransform trt = txtGO.GetComponent<RectTransform>();
+        trt.anchorMin = Vector2.zero;
+        trt.anchorMax = Vector2.one;
+        trt.offsetMin = trt.offsetMax = Vector2.zero;
+    }
+
+    void Restart()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    void GoToMainMenu()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("MainMenu");
     }
 
     void ShowDeathOverlay()

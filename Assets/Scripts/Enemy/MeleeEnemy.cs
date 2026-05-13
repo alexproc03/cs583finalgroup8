@@ -23,6 +23,7 @@ public class MeleeEnemy : EnemyBase
     {
         base.Awake();
         _agent.stoppingDistance = Mathf.Max(0.1f, meleeRange - 0.3f);
+        _agent.autoBraking      = false;
     }
 
     protected override void Tick(float distToPlayer)
@@ -65,20 +66,8 @@ public class MeleeEnemy : EnemyBase
         else
         {
             _state = State.Chase;
+            PlayAnim(_agent.velocity.sqrMagnitude > 0.1f ? "Run" : "Idle");
             _agent.SetDestination(_player.position);
-
-            // Unreachable target (player on a pillar / off-NavMesh) — don't shuffle.
-            bool unreachable = !_agent.pathPending
-                            && _agent.pathStatus == NavMeshPathStatus.PathPartial;
-            if (unreachable)
-            {
-                _agent.ResetPath();
-                PlayAnim("Idle");
-            }
-            else
-            {
-                PlayAnim(_agent.velocity.sqrMagnitude > 0.1f ? "Run" : "Idle");
-            }
         }
     }
 
