@@ -36,6 +36,11 @@ public class RangedEnemy : EnemyBase
     private int   _strafeDir = 1;
     private float _strafeTimer;
 
+    // LOS hysteresis — brief dropouts shouldn't cause behavior flip
+    private bool  _hasLosStable;
+    private float _losDropoutTimer;
+    private const float LosDropoutTolerance = 0.35f;
+
     // player velocity estimation for lead-aiming
     private Vector3 _prevPlayerPos;
     private Vector3 _playerVelocity;
@@ -61,6 +66,20 @@ public class RangedEnemy : EnemyBase
             _prevPlayerPos  = _player.position;
         }
 
+        // Single LOS sample per frame with hysteresis — prevents flicker between
+        // approach and strafe when sightline grazes cover edges.
+        bool rawLos = HasLineOfSight();
+        if (rawLos)
+        {
+            _hasLosStable    = true;
+            _losDropoutTimer = 0f;
+        }
+        else if (_hasLosStable)
+        {
+            _losDropoutTimer += Time.deltaTime;
+            if (_losDropoutTimer >= LosDropoutTolerance) _hasLosStable = false;
+        }
+
         HandleMovement(distToPlayer);
         HandleBurst(distToPlayer);
     }
@@ -72,7 +91,7 @@ public class RangedEnemy : EnemyBase
     {
         bool tooClose = dist < minEngagementRange;
         bool tooFar   = dist > preferredRange + rangeTolerance;
-        bool hasLos   = HasLineOfSight();
+        bool hasLos   = _hasLosStable;
 
         if (tooClose)
         {
@@ -82,7 +101,6 @@ public class RangedEnemy : EnemyBase
             if (NavMesh.SamplePosition(retreatDest, out NavMeshHit navHit, 4f, NavMesh.AllAreas))
                 _agent.SetDestination(navHit.position);
             _state = State.Chase;
-            PlayAnim("Run");
         }
         else if (tooFar || !hasLos)
         {
@@ -91,15 +109,18 @@ public class RangedEnemy : EnemyBase
             Vector3 idealPos = _player.position + toEnemy * preferredRange;
             _agent.SetDestination(idealPos);
             _state = State.Chase;
-            PlayAnim("Run");
         }
         else
         {
             // In range with clear LOS — strafe to be harder to hit
             Strafe();
             _state = _burstShotsLeft > 0 ? State.Attack : State.Idle;
-            PlayAnim(_burstShotsLeft > 0 ? "Attack" : "Idle");
         }
+
+        if (_burstShotsLeft > 0 && !tooClose && !tooFar && hasLos)
+            PlayAnim("Attack");
+        else
+            PlayAnim(_agent.velocity.sqrMagnitude > 0.1f ? "Run" : "Idle");
     }
 
     void Strafe()
@@ -130,7 +151,7 @@ public class RangedEnemy : EnemyBase
     // -------------------------------------------------------------------------
     void HandleBurst(float dist)
     {
-        bool hasLos  = HasLineOfSight();
+        bool hasLos  = _hasLosStable;
         // Slightly generous range so retreating enemies can still complete a burst
         bool inRange = dist < preferredRange + rangeTolerance + 5f;
 
@@ -162,7 +183,7 @@ public class RangedEnemy : EnemyBase
         if (bulletPrefab == null) return;
 
         Vector3 muzzlePos = transform.position + Vector3.up * muzzleHeightOffset;
-        Vector3 targetPos = _player.position + Vector3.up * 1f;   // aim at chest height
+        Vector3 targetPos = PlayerAimPoint();   // tracks crouch height
 
         // Predictive lead — estimate where the player will be when the bullet arrives.
         // Uses 0.5× lead so players can still dodge with reaction.

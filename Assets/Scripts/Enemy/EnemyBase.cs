@@ -3,6 +3,9 @@ using UnityEngine.AI;
 
 public abstract class EnemyBase : MonoBehaviour
 {
+    // Fired whenever this enemy is hit (isKill=true when the hit kills it)
+    public static event System.Action<bool> OnEnemyHit;
+
     protected enum State { Idle, Chase, Attack, Dead }
 
     [Header("Health")]
@@ -14,12 +17,13 @@ public abstract class EnemyBase : MonoBehaviour
     [Header("Navigation")]
     public float moveSpeed = 4f;
 
-    protected NavMeshAgent _agent;
-    protected Transform    _player;
-    protected State        _state = State.Idle;
-    protected Animator     _anim;
-    protected EnemyAudio   _audio;
-    protected float        _health;
+    protected NavMeshAgent       _agent;
+    protected Transform          _player;
+    protected CharacterController _playerCC;
+    protected State              _state = State.Idle;
+    protected Animator           _anim;
+    protected EnemyAudio         _audio;
+    protected float              _health;
 
     private string _currentAnim;
 
@@ -37,10 +41,12 @@ public abstract class EnemyBase : MonoBehaviour
         _health -= damage;
         Debug.Log($"{name} took {damage} dmg, hp={_health}", this);
         if (_health <= 0f) Die();
+        else OnEnemyHit?.Invoke(false);
     }
 
     protected virtual void Die()
     {
+        OnEnemyHit?.Invoke(true);
         _state = State.Dead;
         _agent.ResetPath();
         _agent.enabled = false;
@@ -53,7 +59,10 @@ public abstract class EnemyBase : MonoBehaviour
     {
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
-            _player = playerObj.transform;
+        {
+            _player   = playerObj.transform;
+            _playerCC = playerObj.GetComponent<CharacterController>();
+        }
         else
             Debug.LogWarning($"{name}: No GameObject tagged 'Player' found. Tag your Player object.");
 
@@ -79,18 +88,36 @@ public abstract class EnemyBase : MonoBehaviour
         _anim.CrossFadeInFixedTime(hash, blendTime, 0, fixedTimeOffset);
     }
 
+    // Center of the player's collider in world space — tracks crouch height.
+    protected Vector3 PlayerAimPoint()
+    {
+        if (_player == null) return Vector3.zero;
+        float h = _playerCC != null ? _playerCC.height * 0.5f : 1f;
+        return _player.position + Vector3.up * h;
+    }
+
     // Returns true if nothing blocks the sightline to the player.
+    // Casts from the enemy's eye level to both the player's torso and head — if
+    // either point is visible the enemy can fire, so peeking over cover works
+    // symmetrically for both sides.
     protected bool HasLineOfSight()
     {
         if (_player == null) return false;
 
-        Vector3 origin = transform.position + Vector3.up;
-        Vector3 target = _player.position + Vector3.up;
-        Vector3 dir = target - origin;
+        float eyeH = _agent != null ? _agent.height * 0.9f : 1.6f;
+        Vector3 origin = transform.position + Vector3.up * eyeH;
 
+        float headH = _playerCC != null ? _playerCC.height * 0.95f : 1.8f;
+        Vector3 headPoint = _player.position + Vector3.up * headH;
+
+        return RayHitsPlayer(origin, PlayerAimPoint()) || RayHitsPlayer(origin, headPoint);
+    }
+
+    private bool RayHitsPlayer(Vector3 origin, Vector3 target)
+    {
+        Vector3 dir = target - origin;
         if (Physics.Raycast(origin, dir.normalized, out RaycastHit hit, dir.magnitude + 0.1f))
             return hit.transform.IsChildOf(_player);
-
         return false;
     }
 }
