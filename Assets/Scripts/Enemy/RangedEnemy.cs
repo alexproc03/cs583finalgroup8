@@ -36,11 +36,6 @@ public class RangedEnemy : EnemyBase
     private int   _strafeDir = 1;
     private float _strafeTimer;
 
-    // LOS hysteresis — brief dropouts shouldn't cause behavior flip
-    private bool  _hasLosStable;
-    private float _losDropoutTimer;
-    private const float LosDropoutTolerance = 0.35f;
-
     // player velocity estimation for lead-aiming
     private Vector3 _prevPlayerPos;
     private Vector3 _playerVelocity;
@@ -66,20 +61,6 @@ public class RangedEnemy : EnemyBase
             _prevPlayerPos  = _player.position;
         }
 
-        // Single LOS sample per frame with hysteresis — prevents flicker between
-        // approach and strafe when sightline grazes cover edges.
-        bool rawLos = HasLineOfSight();
-        if (rawLos)
-        {
-            _hasLosStable    = true;
-            _losDropoutTimer = 0f;
-        }
-        else if (_hasLosStable)
-        {
-            _losDropoutTimer += Time.deltaTime;
-            if (_losDropoutTimer >= LosDropoutTolerance) _hasLosStable = false;
-        }
-
         HandleMovement(distToPlayer);
         HandleBurst(distToPlayer);
     }
@@ -91,7 +72,7 @@ public class RangedEnemy : EnemyBase
     {
         bool tooClose = dist < minEngagementRange;
         bool tooFar   = dist > preferredRange + rangeTolerance;
-        bool hasLos   = _hasLosStable;
+        bool hasLos   = HasLineOfSight();
 
         if (tooClose)
         {
@@ -151,7 +132,7 @@ public class RangedEnemy : EnemyBase
     // -------------------------------------------------------------------------
     void HandleBurst(float dist)
     {
-        bool hasLos  = _hasLosStable;
+        bool hasLos  = HasLineOfSight();
         // Slightly generous range so retreating enemies can still complete a burst
         bool inRange = dist < preferredRange + rangeTolerance + 5f;
 

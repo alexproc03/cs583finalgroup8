@@ -51,6 +51,7 @@ public abstract class EnemyBase : MonoBehaviour
         _agent.ResetPath();
         _agent.enabled = false;
         PlayAnim("Death");
+        if (_audio != null) _audio.PlayDeath();
         Debug.Log($"{name} died (Destroy in 2s)", this);
         Destroy(gameObject, 2f);
     }
@@ -97,27 +98,17 @@ public abstract class EnemyBase : MonoBehaviour
     }
 
     // Returns true if nothing blocks the sightline to the player.
-    // Casts from the enemy's eye level to both the player's torso and head — if
-    // either point is visible the enemy can fire, so peeking over cover works
-    // symmetrically for both sides.
     protected bool HasLineOfSight()
     {
         if (_player == null) return false;
 
-        float eyeH = _agent != null ? _agent.height * 0.9f : 1.6f;
-        Vector3 origin = transform.position + Vector3.up * eyeH;
-
-        float headH = _playerCC != null ? _playerCC.height * 0.95f : 1.8f;
-        Vector3 headPoint = _player.position + Vector3.up * headH;
-
-        return RayHitsPlayer(origin, PlayerAimPoint()) || RayHitsPlayer(origin, headPoint);
-    }
-
-    private bool RayHitsPlayer(Vector3 origin, Vector3 target)
-    {
+        Vector3 origin = transform.position + Vector3.up;
+        Vector3 target = PlayerAimPoint();
         Vector3 dir = target - origin;
+
         if (Physics.Raycast(origin, dir.normalized, out RaycastHit hit, dir.magnitude + 0.1f))
             return hit.transform.IsChildOf(_player);
+
         return false;
     }
 }

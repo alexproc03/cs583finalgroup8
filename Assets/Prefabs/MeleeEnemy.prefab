@@ -384,6 +384,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAudio
   footstepSound: {fileID: 8300000, guid: 608b1e58def421346b83a179d3f5b210, type: 3}
   attackSound: {fileID: 8300000, guid: 6483b8c1d37f75f46bc2677df6973ccd, type: 3}
+  deathSound: {fileID: 8300000, guid: d8aa440caacf4e34fad93c297f560208, type: 3}
 --- !u!4 &6829979823003442211 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: c31501b18d95d82419dad970a9527842, type: 3}

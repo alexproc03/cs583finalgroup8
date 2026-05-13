@@ -5,6 +5,7 @@ public class EnemyAudio : MonoBehaviour
 {
     public AudioClip footstepSound;
     public AudioClip attackSound;
+    public AudioClip deathSound;
 
     private AudioSource _audioSource;
 
@@ -25,5 +26,10 @@ public class EnemyAudio : MonoBehaviour
     public void PlayAttack()
     {
         if (attackSound != null) _audioSource.PlayOneShot(attackSound);
+    }
+
+    public void PlayDeath()
+    {
+        if (deathSound != null) _audioSource.PlayOneShot(deathSound);
     }
 }
