@@ -7,10 +7,11 @@ public class MeleeEnemy : EnemyBase
 {
     [Header("Melee")]
     public float meleeRange = 1.8f;
+    public float meleeHitRange = 2.6f;
     public float attackCooldown = 1.4f;
     public float meleeDamage = 15f;
-    public float attackAnimDuration = 0.8f;
-    public float attackHitDelay = 0.35f;
+    public float attackAnimDuration = 0.4f;
+    public float attackHitDelay = 0.08f;
 
     private float _attackTimer;
     private float _pendingHitTime = -1f;
@@ -29,7 +30,7 @@ public class MeleeEnemy : EnemyBase
         if (_pendingHitTime > 0f && Time.time >= _pendingHitTime)
         {
             _pendingHitTime = -1f;
-            if (distToPlayer <= meleeRange) PerformMeleeAttack();
+            if (distToPlayer <= meleeHitRange) PerformMeleeAttack();
         }
 
         // Mid-swing: lock state, let the Attack animation finish uninterrupted.
@@ -49,7 +50,6 @@ public class MeleeEnemy : EnemyBase
             {
                 FacePlayer();
                 PlayAnim("Attack");
-                if (_audio != null) _audio.PlayAttack();
                 _pendingHitTime = Time.time + attackHitDelay;
                 _attackTimer = attackCooldown;
             }
@@ -79,6 +79,10 @@ public class MeleeEnemy : EnemyBase
     {
         if (_player == null) return;
         PlayerHealth ph = _player.GetComponent<PlayerHealth>();
-        if (ph != null) ph.TakeDamage(meleeDamage);
+        if (ph != null)
+        {
+            ph.TakeDamage(meleeDamage);
+            if (_audio != null) _audio.PlayAttack();
+        }
     }
 }
