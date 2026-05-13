@@ -98,6 +98,13 @@ public class RangedEnemy : EnemyBase
             _state = _burstShotsLeft > 0 ? State.Attack : State.Idle;
         }
 
+        // If the destination can't be fully reached (player on a pillar / off-NavMesh),
+        // stop pursuing — otherwise we crawl forward in slow motion forever.
+        bool unreachable = !_agent.pathPending
+                        && _agent.hasPath
+                        && _agent.pathStatus == NavMeshPathStatus.PathPartial;
+        if (unreachable) _agent.ResetPath();
+
         if (_burstShotsLeft > 0 && !tooClose && !tooFar && hasLos)
             PlayAnim("Attack");
         else
