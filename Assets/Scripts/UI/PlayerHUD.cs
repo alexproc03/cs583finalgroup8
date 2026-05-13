@@ -11,20 +11,20 @@ public class PlayerHUD : MonoBehaviour
 
     private AudioSource _hmAudio;
     private WeaponManager _wm;
-    private Image[]       _slotBgs;
-    private Text[]        _slotTexts;
-    private Text          _weaponNameText;
-    private Text          _ammoText;
-    private Font          _font;
-    private PlayerHealth  _ph;
-    private Text          _healthText;
-    private GameObject    _deathOverlay;
-    private Image         _damageFlash;
+    private Image[] _slotBgs;
+    private Text[] _slotTexts;
+    private Text _weaponNameText;
+    private Text _ammoText;
+    private Font _font;
+    private PlayerHealth _ph;
+    private Text _healthText;
+    private GameObject _deathOverlay;
+    private Image _damageFlash;
 
     // Hitmarker (X shape, CoD style)
-    private Image[]   _hmArms;
+    private Image[] _hmArms;
     private Coroutine _hmAnim;
-    private static readonly Color HmHitColor  = new Color(1f, 1f, 1f, 1f);
+    private static readonly Color HmHitColor = new Color(1f, 1f, 1f, 1f);
     private static readonly Color HmKillColor = new Color(1f, 0.15f, 0.15f, 1f);
 
     void Start()
@@ -41,13 +41,13 @@ public class PlayerHUD : MonoBehaviour
 
         GameObject canvasGO = new GameObject("PlayerHUD");
         Canvas canvas = canvasGO.AddComponent<Canvas>();
-        canvas.renderMode  = RenderMode.ScreenSpaceOverlay;
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = 10;
 
         CanvasScaler scaler = canvasGO.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode        = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
-        scaler.matchWidthOrHeight  = 0.5f;
+        scaler.matchWidthOrHeight = 0.5f;
 
         canvasGO.AddComponent<GraphicRaycaster>();
 
@@ -59,9 +59,9 @@ public class PlayerHUD : MonoBehaviour
         BuildHealthBar(canvasGO);
         BuildDeathOverlay(canvasGO);
 
-        PlayerHealth.OnPlayerDied    += ShowDeathOverlay;
+        PlayerHealth.OnPlayerDied += ShowDeathOverlay;
         PlayerHealth.OnPlayerDamaged += FlashDamage;
-        EnemyBase.OnEnemyHit         += OnEnemyHit;
+        EnemyBase.OnEnemyHit += OnEnemyHit;
 
         _wm.OnWeaponChanged += RefreshSlots;
         RefreshSlots(_wm.currentIndex);
@@ -79,9 +79,9 @@ public class PlayerHUD : MonoBehaviour
     {
         if (_wm != null) _wm.OnWeaponChanged -= RefreshSlots;
         if (_ph != null) _ph.OnHealthChanged -= RefreshHealth;
-        PlayerHealth.OnPlayerDied    -= ShowDeathOverlay;
+        PlayerHealth.OnPlayerDied -= ShowDeathOverlay;
         PlayerHealth.OnPlayerDamaged -= FlashDamage;
-        EnemyBase.OnEnemyHit         -= OnEnemyHit;
+        EnemyBase.OnEnemyHit -= OnEnemyHit;
     }
 
     void Update()
@@ -148,9 +148,9 @@ public class PlayerHUD : MonoBehaviour
             go.AddComponent<Image>().color = Color.white;
             RectTransform rt = go.GetComponent<RectTransform>();
             rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
-            rt.pivot            = new Vector2(0.5f, 0.5f);
+            rt.pivot = new Vector2(0.5f, 0.5f);
             rt.anchoredPosition = pos;
-            rt.sizeDelta        = size;
+            rt.sizeDelta = size;
         }
     }
 
@@ -167,15 +167,15 @@ public class PlayerHUD : MonoBehaviour
         {
             var go = new GameObject($"HM_{i}");
             go.transform.SetParent(root.transform, false);
-            _hmArms[i]               = go.AddComponent<Image>();
+            _hmArms[i] = go.AddComponent<Image>();
             _hmArms[i].raycastTarget = false;
 
             var rt = go.GetComponent<RectTransform>();
-            rt.anchorMin        = rt.anchorMax = new Vector2(0.5f, 0.5f);
-            rt.pivot            = new Vector2(0.5f, 0.5f);
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.pivot = new Vector2(0.5f, 0.5f);
             rt.anchoredPosition = positions[i];
-            rt.sizeDelta        = new Vector2(2.5f, 12f);
-            rt.localRotation    = Quaternion.Euler(0f, 0f, rotations[i]);
+            rt.sizeDelta = new Vector2(2.5f, 12f);
+            rt.localRotation = Quaternion.Euler(0f, 0f, rotations[i]);
 
             go.SetActive(false); // hidden until a hit fires
         }
@@ -213,11 +213,11 @@ public class PlayerHUD : MonoBehaviour
     void BuildWeaponSlots(GameObject root)
     {
         int n = _wm.weapons.Length;
-        _slotBgs   = new Image[n];
+        _slotBgs = new Image[n];
         _slotTexts = new Text[n];
 
         const float slotSize = 75f;
-        const float gap      = 8f;
+        const float gap = 8f;
         float totalW = n * slotSize + (n - 1) * gap;
 
         for (int i = 0; i < n; i++)
@@ -228,21 +228,21 @@ public class PlayerHUD : MonoBehaviour
 
             RectTransform rt = slotGO.GetComponent<RectTransform>();
             rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0f);
-            rt.pivot            = new Vector2(0.5f, 0f);
-            float x             = -totalW / 2f + i * (slotSize + gap) + slotSize / 2f;
+            rt.pivot = new Vector2(0.5f, 0f);
+            float x = -totalW / 2f + i * (slotSize + gap) + slotSize / 2f;
             rt.anchoredPosition = new Vector2(x, 20f);
-            rt.sizeDelta        = new Vector2(slotSize, slotSize);
+            rt.sizeDelta = new Vector2(slotSize, slotSize);
 
             GameObject labelGO = new GameObject("Label");
             labelGO.transform.SetParent(slotGO.transform, false);
             Text t = labelGO.AddComponent<Text>();
-            t.font               = _font;
-            t.alignment          = TextAnchor.MiddleCenter;
-            t.fontSize           = 12;
+            t.font = _font;
+            t.alignment = TextAnchor.MiddleCenter;
+            t.fontSize = 12;
             t.horizontalOverflow = HorizontalWrapMode.Overflow;
-            t.verticalOverflow   = VerticalWrapMode.Overflow;
-            t.text               = $"[{i + 1}]\n{_wm.weapons[i].weaponName}";
-            _slotTexts[i]        = t;
+            t.verticalOverflow = VerticalWrapMode.Overflow;
+            t.text = $"[{i + 1}]\n{_wm.weapons[i].weaponName}";
+            _slotTexts[i] = t;
 
             RectTransform lrt = labelGO.GetComponent<RectTransform>();
             lrt.anchorMin = Vector2.zero;
@@ -253,7 +253,7 @@ public class PlayerHUD : MonoBehaviour
 
     void BuildHealthBar(GameObject root)
     {
-        _healthText = MakeText(root, "HealthText", TextAnchor.LowerLeft, 22, Color.white,
+        _healthText = MakeText(root, "HealthText", TextAnchor.LowerLeft, 31, Color.white,
                                new Vector2(0f, 0f), new Vector2(24f, 20f), new Vector2(260f, 28f));
     }
 
@@ -304,9 +304,9 @@ public class PlayerHUD : MonoBehaviour
     void BuildWeaponInfo(GameObject root)
     {
         var botRight = new Vector2(1f, 0f);
-        _weaponNameText = MakeText(root, "WeaponName", TextAnchor.LowerRight, 22, Color.white,
+        _weaponNameText = MakeText(root, "WeaponName", TextAnchor.LowerRight, 38, Color.white,
                                    botRight, new Vector2(-20f, 108f), new Vector2(180f, 30f));
-        _ammoText       = MakeText(root, "Ammo", TextAnchor.LowerRight, 15,
+        _ammoText = MakeText(root, "Ammo", TextAnchor.LowerRight, 31,
                                    new Color(0.75f, 0.75f, 0.75f),
                                    botRight, new Vector2(-20f, 80f), new Vector2(120f, 24f));
     }
@@ -317,18 +317,18 @@ public class PlayerHUD : MonoBehaviour
         GameObject go = new GameObject(name);
         go.transform.SetParent(root.transform, false);
         Text t = go.AddComponent<Text>();
-        t.font               = _font;
-        t.alignment          = anchor;
-        t.fontSize           = fontSize;
-        t.color              = color;
+        t.font = _font;
+        t.alignment = anchor;
+        t.fontSize = fontSize;
+        t.color = color;
         t.horizontalOverflow = HorizontalWrapMode.Overflow;
-        t.verticalOverflow   = VerticalWrapMode.Overflow;
+        t.verticalOverflow = VerticalWrapMode.Overflow;
 
         RectTransform rt = go.GetComponent<RectTransform>();
         rt.anchorMin = rt.anchorMax = anchorPivot;
-        rt.pivot            = anchorPivot;
+        rt.pivot = anchorPivot;
         rt.anchoredPosition = anchoredPos;
-        rt.sizeDelta        = size;
+        rt.sizeDelta = size;
         return t;
     }
 
@@ -338,12 +338,12 @@ public class PlayerHUD : MonoBehaviour
         for (int i = 0; i < _slotBgs.Length; i++)
         {
             bool active = i == activeIndex;
-            _slotBgs[i].color   = active ? _wm.weapons[i].hudColor
+            _slotBgs[i].color = active ? _wm.weapons[i].hudColor
                                          : new Color(0.12f, 0.12f, 0.12f, 0.75f);
             _slotTexts[i].color = active ? Color.black
                                          : new Color(0.65f, 0.65f, 0.65f, 1f);
         }
         if (_weaponNameText != null) _weaponNameText.text = _wm.weapons[activeIndex].weaponName;
-        if (_ammoText != null)       _ammoText.text       = $"{_wm.currentWeapon.currentAmmo} / {_wm.currentWeapon.maxAmmo}";
+        if (_ammoText != null) _ammoText.text = $"{_wm.currentWeapon.currentAmmo} / {_wm.currentWeapon.maxAmmo}";
     }
 }
