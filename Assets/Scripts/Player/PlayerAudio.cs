@@ -9,6 +9,7 @@ public class PlayerAudio : MonoBehaviour
     public AudioClip dashSound;
     public AudioClip slideSound;
     public AudioClip grappleSound;
+    public AudioClip healSound;
 
     private AudioSource _audioSource;
 
@@ -24,6 +25,7 @@ public class PlayerAudio : MonoBehaviour
     public void PlayDash()     => PlayOne(dashSound);
     public void PlaySlide()    => PlayOne(slideSound);
     public void PlayGrapple()  => PlayOne(grappleSound);
+    public void PlayHeal()     => PlayOne(healSound);
 
     void PlayOne(AudioClip clip)
     {

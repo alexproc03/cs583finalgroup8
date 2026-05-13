@@ -15,6 +15,12 @@ public class PlayerHUD : MonoBehaviour
     private GameObject    _deathOverlay;
     private Image         _damageFlash;
 
+    // Hitmarker (X shape, CoD style)
+    private Image[]   _hmArms;
+    private Coroutine _hmAnim;
+    private static readonly Color HmHitColor  = new Color(1f, 1f, 1f, 1f);
+    private static readonly Color HmKillColor = new Color(1f, 0.15f, 0.15f, 1f);
+
     void Start()
     {
         _wm = FindFirstObjectByType<WeaponManager>();
@@ -37,6 +43,7 @@ public class PlayerHUD : MonoBehaviour
 
         BuildDamageFlash(canvasGO);
         BuildCrosshair(canvasGO);
+        BuildHitMarker(canvasGO);
         BuildWeaponSlots(canvasGO);
         BuildWeaponInfo(canvasGO);
         BuildHealthBar(canvasGO);
@@ -44,6 +51,7 @@ public class PlayerHUD : MonoBehaviour
 
         PlayerHealth.OnPlayerDied    += ShowDeathOverlay;
         PlayerHealth.OnPlayerDamaged += FlashDamage;
+        EnemyBase.OnEnemyHit         += OnEnemyHit;
 
         _wm.OnWeaponChanged += RefreshSlots;
         RefreshSlots(_wm.currentIndex);
@@ -63,6 +71,7 @@ public class PlayerHUD : MonoBehaviour
         if (_ph != null) _ph.OnHealthChanged -= RefreshHealth;
         PlayerHealth.OnPlayerDied    -= ShowDeathOverlay;
         PlayerHealth.OnPlayerDamaged -= FlashDamage;
+        EnemyBase.OnEnemyHit         -= OnEnemyHit;
     }
 
     void Update()
@@ -133,6 +142,56 @@ public class PlayerHUD : MonoBehaviour
             rt.anchoredPosition = pos;
             rt.sizeDelta        = size;
         }
+    }
+
+    void BuildHitMarker(GameObject root)
+    {
+        var positions = new Vector2[] {
+            new Vector2(-8f,  8f), new Vector2( 8f,  8f),
+            new Vector2(-8f, -8f), new Vector2( 8f, -8f),
+        };
+        var rotations = new float[] { 45f, -45f, -45f, 45f };
+
+        _hmArms = new Image[4];
+        for (int i = 0; i < 4; i++)
+        {
+            var go = new GameObject($"HM_{i}");
+            go.transform.SetParent(root.transform, false);
+            _hmArms[i]               = go.AddComponent<Image>();
+            _hmArms[i].raycastTarget = false;
+
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin        = rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.pivot            = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition = positions[i];
+            rt.sizeDelta        = new Vector2(2.5f, 12f);
+            rt.localRotation    = Quaternion.Euler(0f, 0f, rotations[i]);
+
+            go.SetActive(false); // hidden until a hit fires
+        }
+    }
+
+    void OnEnemyHit(bool isKill)
+    {
+        if (_hmArms == null) return;
+        Color c = isKill ? HmKillColor : HmHitColor;
+        foreach (var arm in _hmArms) { arm.color = c; arm.gameObject.SetActive(true); }
+        if (_hmAnim != null) StopCoroutine(_hmAnim);
+        _hmAnim = StartCoroutine(HitMarkerRoutine());
+    }
+
+    IEnumerator HitMarkerRoutine()
+    {
+        yield return new WaitForSecondsRealtime(0.10f);
+        float t = 0f;
+        while (t < 0.12f)
+        {
+            t += Time.unscaledDeltaTime;
+            float a = 1f - t / 0.12f;
+            foreach (var arm in _hmArms) { Color c = arm.color; c.a = a; arm.color = c; }
+            yield return null;
+        }
+        foreach (var arm in _hmArms) arm.gameObject.SetActive(false);
     }
 
     void BuildWeaponSlots(GameObject root)

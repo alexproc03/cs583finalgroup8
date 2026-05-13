@@ -24,6 +24,7 @@ public class PlayerController : MonoBehaviour
     public float dashSpeed = 22f;
     public float dashDuration = 0.30f;
     public float dashCooldown = 1f;
+    public float dashVerticalBoost = 4f;
 
     [Header("Crouch / Slide")]
     public float crouchHeight = 1f;
@@ -189,6 +190,8 @@ public class PlayerController : MonoBehaviour
             _dashDirection = dir;
             _dashTimer = dashDuration;
             _dashCooldownTimer = dashCooldown;
+            if (_velocity.y < dashVerticalBoost)
+                _velocity.y = dashVerticalBoost;
             if (_audio != null) _audio.PlayDash();
         }
     }

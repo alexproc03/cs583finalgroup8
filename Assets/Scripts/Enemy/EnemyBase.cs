@@ -3,6 +3,9 @@ using UnityEngine.AI;
 
 public abstract class EnemyBase : MonoBehaviour
 {
+    // Fired whenever this enemy is hit (isKill=true when the hit kills it)
+    public static event System.Action<bool> OnEnemyHit;
+
     protected enum State { Idle, Chase, Attack, Dead }
 
     [Header("Health")]
@@ -37,10 +40,12 @@ public abstract class EnemyBase : MonoBehaviour
         _health -= damage;
         Debug.Log($"{name} took {damage} dmg, hp={_health}", this);
         if (_health <= 0f) Die();
+        else OnEnemyHit?.Invoke(false);
     }
 
     protected virtual void Die()
     {
+        OnEnemyHit?.Invoke(true);
         _state = State.Dead;
         _agent.ResetPath();
         _agent.enabled = false;
