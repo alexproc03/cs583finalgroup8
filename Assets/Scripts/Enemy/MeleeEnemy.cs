@@ -6,12 +6,14 @@ using UnityEngine;
 public class MeleeEnemy : EnemyBase
 {
     [Header("Melee")]
-    public float meleeRange = 1.8f;
-    public float meleeHitRange = 2.6f;
+    public float meleeRange = 2.5f;
+    public float meleeHitRange = 3.5f;
     public float attackCooldown = 1.4f;
     public float meleeDamage = 15f;
-    public float attackAnimDuration = 0.4f;
-    public float attackHitDelay = 0.08f;
+    public float attackAnimDuration = 0.08f;
+    public float attackHitDelay = 0.01f;
+    public float attackBlendTime = 0.20f;
+    public float attackAnimStartTime = 0.2f;
 
     private float _attackTimer;
     private float _pendingHitTime = -1f;
@@ -49,7 +51,7 @@ public class MeleeEnemy : EnemyBase
             if (_attackTimer <= 0f)
             {
                 FacePlayer();
-                PlayAnim("Attack");
+                PlayAnim("Attack", attackBlendTime, attackAnimStartTime);
                 _pendingHitTime = Time.time + attackHitDelay;
                 _attackTimer = attackCooldown;
             }

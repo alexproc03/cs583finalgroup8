@@ -9,10 +9,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8537545551657257598}
-  - component: {fileID: 4155685927165589037}
   - component: {fileID: 1386630822566336961}
   - component: {fileID: 852239708737812022}
   - component: {fileID: 4406089737197543867}
+  - component: {fileID: 1713552224919874301}
   m_Layer: 0
   m_Name: MeleeEnemy
   m_TagString: Untagged
@@ -36,26 +36,6 @@ Transform:
   - {fileID: 6829979823003442211}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4155685927165589037
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1964939124400097453}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 308e6aa964f704d7e9d0da5a4a73b22d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MeleeEnemy
-  maxHealth: 100
-  detectionRange: 1000
-  moveSpeed: 12
-  meleeRange: 1.8
-  attackCooldown: 1.4
-  meleeDamage: 15
-  attackAnimDuration: 0.8
-  attackHitDelay: 0.35
 --- !u!195 &1386630822566336961
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -198,6 +178,29 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1713552224919874301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1964939124400097453}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 308e6aa964f704d7e9d0da5a4a73b22d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MeleeEnemy
+  maxHealth: 100
+  detectionRange: 20
+  moveSpeed: 12
+  meleeRange: 1.5
+  meleeHitRange: 2.5
+  attackCooldown: 1.4
+  meleeDamage: 15
+  attackAnimDuration: 0.4
+  attackHitDelay: 0.1
+  attackBlendTime: 0.05
+  attackAnimStartTime: 0.08
 --- !u!1001 &6431790127232187336
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -379,8 +382,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f04651b31c3973145a729478847948bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAudio
-  footstepSound: {fileID: 8300000, guid: d536596b69330ee47bc441d417c742bc, type: 3}
-  attackSound: {fileID: 8300000, guid: 608b1e58def421346b83a179d3f5b210, type: 3}
+  footstepSound: {fileID: 8300000, guid: 608b1e58def421346b83a179d3f5b210, type: 3}
+  attackSound: {fileID: 8300000, guid: 6483b8c1d37f75f46bc2677df6973ccd, type: 3}
 --- !u!4 &6829979823003442211 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: c31501b18d95d82419dad970a9527842, type: 3}

@@ -70,13 +70,13 @@ public abstract class EnemyBase : MonoBehaviour
     // Each subclass drives its own behavior here.
     protected abstract void Tick(float distToPlayer);
 
-    protected void PlayAnim(string animName)
+    protected void PlayAnim(string animName, float blendTime = 0.15f, float fixedTimeOffset = 0f)
     {
         if (_anim == null || _currentAnim == animName) return;
         int hash = Animator.StringToHash(animName);
         if (!_anim.HasState(0, hash)) return;
         _currentAnim = animName;
-        _anim.CrossFadeInFixedTime(hash, 0.15f);
+        _anim.CrossFadeInFixedTime(hash, blendTime, 0, fixedTimeOffset);
     }
 
     // Returns true if nothing blocks the sightline to the player.

@@ -192,5 +192,7 @@ public class RangedEnemy : EnemyBase
             bullet.damage = bulletDamage;
             bullet.Launch(dir);
         }
+
+        if (_audio != null) _audio.PlayAttack();
     }
 }
